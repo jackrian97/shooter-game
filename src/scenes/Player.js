@@ -4,23 +4,16 @@ import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockCont
 export default function createPlayer(camera, sceneSize) {
   const controls = new PointerLockControls(camera, document.body);
 
-  // Velocidades de movimiento
-  const speed = 0.2;
-  const velocity = new THREE.Vector3(0, 0, 0);
-  const direction = new THREE.Vector3();
-
-  // Limitar posición del jugador al espacio de la escena
-  const clampPosition = (position) => {
-    position.x = THREE.MathUtils.clamp(position.x, -sceneSize.x / 2, sceneSize.x / 2);
-    position.z = THREE.MathUtils.clamp(position.z, -sceneSize.z, 0);
-  };
+  const speed = 0.2; // Velocidad de movimiento
+  const velocity = new THREE.Vector3(0, 0, 0); // Velocidad del jugador
+  const direction = new THREE.Vector3(); // Dirección de movimiento
 
   // Evento para bloquear el mouse
   document.addEventListener('click', () => {
     controls.lock();
   });
 
-  // Configuración de movimiento
+  // Teclas de movimiento
   const keys = {
     forward: false,
     backward: false,
@@ -28,12 +21,13 @@ export default function createPlayer(camera, sceneSize) {
     right: false,
   };
 
+  // Detectar teclas presionadas
   const onKeyDown = (event) => {
     switch (event.code) {
-      case 'KeyS':
+      case 'KeyW':
         keys.forward = true;
         break;
-      case 'KeyW':
+      case 'KeyS':
         keys.backward = true;
         break;
       case 'KeyA':
@@ -45,12 +39,13 @@ export default function createPlayer(camera, sceneSize) {
     }
   };
 
+  // Detectar teclas soltadas
   const onKeyUp = (event) => {
     switch (event.code) {
-      case 'KeyS':
+      case 'KeyW':
         keys.forward = false;
         break;
-      case 'KeyW':
+      case 'KeyS':
         keys.backward = false;
         break;
       case 'KeyA':
@@ -65,22 +60,41 @@ export default function createPlayer(camera, sceneSize) {
   document.addEventListener('keydown', onKeyDown);
   document.addEventListener('keyup', onKeyUp);
 
+  // Limitar posición del jugador al tamaño de la escena
+  const clampPosition = (position) => {
+    position.x = THREE.MathUtils.clamp(position.x, -sceneSize.x / 2, sceneSize.x / 2);
+    position.z = THREE.MathUtils.clamp(position.z, -sceneSize.z, 0);
+  };
+
   // Actualizar movimiento
   const update = () => {
-    direction.z = Number(keys.forward) - Number(keys.backward);
-    direction.x = Number(keys.right) - Number(keys.left);
-    direction.normalize(); // Normalizar para velocidad constante
-
     if (controls.isLocked) {
-      // Actualizar la velocidad
-      velocity.x = direction.x * speed;
-      velocity.z = direction.z * speed;
+      // Calculamos la dirección hacia adelante y derecha en base a la orientación de la cámara
+      const forward = new THREE.Vector3(); // Dirección hacia adelante
+      camera.getWorldDirection(forward);
+      forward.y = 0; // Ignoramos el eje Y (para evitar que el jugador "vuele")
+      forward.normalize();
 
-      // Aplicar movimiento
-      camera.position.x += velocity.x;
-      camera.position.z += velocity.z;
+      const right = new THREE.Vector3(); // Dirección hacia la derecha
+      right.crossVectors(forward, camera.up).normalize();
 
-      // Restringir posición
+      // Combinamos las direcciones según las teclas presionadas
+      direction.set(0, 0, 0);
+      if (keys.forward) direction.add(forward);
+      if (keys.backward) direction.sub(forward);
+      if (keys.left) direction.sub(right);
+      if (keys.right) direction.add(right);
+
+      // Normalizamos para mantener una velocidad constante en diagonales
+      direction.normalize();
+
+      // Aplicamos la velocidad al movimiento
+      velocity.copy(direction).multiplyScalar(speed);
+
+      // Actualizamos la posición de la cámara (jugador)
+      camera.position.add(velocity);
+
+      // Restringimos la posición dentro de los límites de la escena
       clampPosition(camera.position);
     }
   };
