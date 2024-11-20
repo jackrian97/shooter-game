@@ -124,5 +124,13 @@ scene.add(createWall(wallThickness, sceneSize.y, sceneSize.z, { x: sceneSize.x /
 
   return { dispose };
 }
-
+const scoreElement = document.createElement('div');
+scoreElement.id = 'score';
+scoreElement.style.position = 'absolute';
+scoreElement.style.top = '10px';
+scoreElement.style.left = '10px';
+scoreElement.style.color = 'white';
+scoreElement.style.fontSize = '20px';
+scoreElement.textContent = '0'; // Puntuación inicial
+document.body.appendChild(scoreElement);
 export default createScene;

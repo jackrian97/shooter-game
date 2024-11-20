@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
 export default function createTargets(scene, objects, sceneSize) {
+  createCrosshair()
   const targets = [];
   const targetGeometry = new THREE.SphereGeometry(0.5, 16, 16); // Radio reducido
   const targetMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 }); // Color rojo
@@ -67,5 +68,18 @@ export default function createTargets(scene, objects, sceneSize) {
     targets.push(target);
   }
 
+  function createCrosshair() {
+    const crosshair = document.createElement('div');
+    crosshair.style.position = 'absolute';
+    crosshair.style.top = '50%';
+    crosshair.style.left = '50%';
+    crosshair.style.width = '10px';
+    crosshair.style.height = '10px';
+    crosshair.style.backgroundColor = 'red';
+    crosshair.style.borderRadius = '50%';
+    crosshair.style.transform = 'translate(-50%, -50%)';
+    crosshair.style.zIndex = '1000';
+    document.body.appendChild(crosshair);
+  }
   return targets;
 }
