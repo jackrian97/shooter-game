@@ -1,52 +1,71 @@
 import * as THREE from 'three';
-import { createMovement } from './Movement';
 
-function createTargets(scene, objects, sceneSize) {
+export default function createTargets(scene, objects, sceneSize) {
   const targets = [];
-
-  const targetGeometry = new THREE.CircleGeometry(1, 32);
-  const targetMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+  const targetGeometry = new THREE.SphereGeometry(0.5, 16, 16); // Radio reducido
+  const targetMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 }); // Color rojo
 
   for (let i = 0; i < 5; i++) {
     const target = new THREE.Mesh(targetGeometry, targetMaterial);
 
-    // Posición inicial aleatoria
+    // Posición inicial aleatoria dentro de los límites
     target.position.set(
-      Math.random() * sceneSize.x - sceneSize.x / 2,
-      Math.random() * sceneSize.y,
-      -Math.random() * sceneSize.z
+      THREE.MathUtils.randFloat(-sceneSize.x / 2 + 1, sceneSize.x / 2 - 1),
+      THREE.MathUtils.randFloat(1, sceneSize.y - 1),
+      THREE.MathUtils.randFloat(-sceneSize.z / 2 + 1, sceneSize.z / 2 - 1)
     );
 
-    // Movimiento
-    const movement = createMovement(target.position, sceneSize);
+    // Velocidad aleatoria
+    const velocity = new THREE.Vector3(
+      THREE.MathUtils.randFloat(-0.1, 0.1),
+      THREE.MathUtils.randFloat(-0.1, 0.1),
+      THREE.MathUtils.randFloat(-0.1, 0.1)
+    );
 
-    target.update = () => {
-      movement.update();
+    // Función para detectar colisiones con objetos
+    const checkCollisionWithObjects = () => {
+      for (const object of objects) {
+        const distance = target.position.distanceTo(object.position);
+        const collisionThreshold = 3; // Umbral de colisión
 
-      // Restringir posición dentro de los límites
-      target.position.set(
-        THREE.MathUtils.clamp(movement.position.x, -sceneSize.x / 2, sceneSize.x / 2),
-        THREE.MathUtils.clamp(movement.position.y, 1, sceneSize.y),
-        THREE.MathUtils.clamp(movement.position.z, -sceneSize.z, 0)
-      );
-
-      // Detectar colisiones con objetos
-      for (const obj of objects) {
-        const distance = target.position.distanceTo(obj.position);
-        if (distance < 3) { // Ajuste según tamaño de objetos
-          movement.velocity.x = -movement.velocity.x;
-          movement.velocity.y = -movement.velocity.y;
-          movement.velocity.z = -movement.velocity.z;
+        if (distance < collisionThreshold) {
+          // Cambiar dirección al colisionar
+          velocity.reflect(target.position.clone().sub(object.position).normalize());
           break;
         }
       }
     };
 
+    // Actualizar movimiento y colisiones
+    const update = () => {
+      target.position.add(velocity);
+
+      // Colisiones con las paredes
+      const wallThickness = 0.5;
+
+      // Eje X (izquierda y derecha)
+      if (target.position.x <= -sceneSize.x / 2 + wallThickness || target.position.x >= sceneSize.x / 2 - wallThickness) {
+        velocity.x *= -1; // Invertir dirección
+      }
+
+      // Eje Z (frontal y trasera)
+      if (target.position.z <= -sceneSize.z / 2 + wallThickness || target.position.z >= sceneSize.z / 2 - wallThickness) {
+        velocity.z *= -1; // Invertir dirección
+      }
+
+      // Eje Y (suelo y techo)
+      if (target.position.y <= 1 || target.position.y >= sceneSize.y - 1) {
+        velocity.y *= -1; // Invertir dirección
+      }
+
+      // Colisiones con los objetos
+      checkCollisionWithObjects();
+    };
+
+    target.update = update;
     scene.add(target);
     targets.push(target);
   }
 
   return targets;
 }
-
-export default createTargets;

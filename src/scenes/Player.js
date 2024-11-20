@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
+import * as THREE from "three";
+import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls";
 
 export default function createPlayer(camera, sceneSize) {
   const controls = new PointerLockControls(camera, document.body);
@@ -9,7 +9,7 @@ export default function createPlayer(camera, sceneSize) {
   const direction = new THREE.Vector3(); // Dirección de movimiento
 
   // Evento para bloquear el mouse
-  document.addEventListener('click', () => {
+  document.addEventListener("click", () => {
     controls.lock();
   });
 
@@ -24,16 +24,16 @@ export default function createPlayer(camera, sceneSize) {
   // Detectar teclas presionadas
   const onKeyDown = (event) => {
     switch (event.code) {
-      case 'KeyW':
+      case "KeyW":
         keys.forward = true;
         break;
-      case 'KeyS':
+      case "KeyS":
         keys.backward = true;
         break;
-      case 'KeyA':
+      case "KeyA":
         keys.left = true;
         break;
-      case 'KeyD':
+      case "KeyD":
         keys.right = true;
         break;
     }
@@ -42,28 +42,38 @@ export default function createPlayer(camera, sceneSize) {
   // Detectar teclas soltadas
   const onKeyUp = (event) => {
     switch (event.code) {
-      case 'KeyW':
+      case "KeyW":
         keys.forward = false;
         break;
-      case 'KeyS':
+      case "KeyS":
         keys.backward = false;
         break;
-      case 'KeyA':
+      case "KeyA":
         keys.left = false;
         break;
-      case 'KeyD':
+      case "KeyD":
         keys.right = false;
         break;
     }
   };
 
-  document.addEventListener('keydown', onKeyDown);
-  document.addEventListener('keyup', onKeyUp);
+  document.addEventListener("keydown", onKeyDown);
+  document.addEventListener("keyup", onKeyUp);
 
   // Limitar posición del jugador al tamaño de la escena
   const clampPosition = (position) => {
-    position.x = THREE.MathUtils.clamp(position.x, -sceneSize.x / 2, sceneSize.x / 2);
-    position.z = THREE.MathUtils.clamp(position.z, -sceneSize.z, 0);
+    // Ajustar límites para incluir las paredes (1 de grosor)
+    const wallThickness = 0.5;
+    position.x = THREE.MathUtils.clamp(
+      position.x,
+      -sceneSize.x / 2 + wallThickness, // Límite izquierdo
+      sceneSize.x / 2 - wallThickness // Límite derecho
+    );
+    position.z = THREE.MathUtils.clamp(
+      position.z,
+      -sceneSize.z / 2 + wallThickness, // Límite frontal (verde)
+      sceneSize.z / 2 - wallThickness // Límite trasero (rojo)
+    );
   };
 
   // Actualizar movimiento

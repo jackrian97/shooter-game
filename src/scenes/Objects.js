@@ -1,29 +1,33 @@
 import * as THREE from 'three';
 
-export function createRandomObjects(scene, numObjects, sceneSize) {
+export function createRandomObjects(scene, count, sceneSize) {
   const objects = [];
+  const objectGeometries = [
+    new THREE.BoxGeometry(4, 4, 4), // Escala aumentada
+    new THREE.SphereGeometry(3.5, 16, 16), // Escala aumentada
+    new THREE.ConeGeometry(3.5, 6, 16), // Escala aumentada
+  ];
+  const objectMaterial = new THREE.MeshPhongMaterial({
+    color: Math.random() * 0xffffff,
+    flatShading: true,
+  });
 
-  for (let i = 0; i < numObjects; i++) {
-    const geometryTypes = [
-      new THREE.BoxGeometry(5, 5, 5), // Tamaño más grande
-      new THREE.SphereGeometry(3, 32, 32),
-      new THREE.ConeGeometry(3, 6, 32),
-    ];
-    const randomGeometry =
-      geometryTypes[Math.floor(Math.random() * geometryTypes.length)];
+  for (let i = 0; i < count; i++) {
+    const geometry = objectGeometries[Math.floor(Math.random() * objectGeometries.length)];
+    const object = new THREE.Mesh(geometry, objectMaterial);
 
-    const material = new THREE.MeshPhongMaterial({
-      color: Math.random() * 0xffffff,
-      flatShading: true,
-    });
-
-    const object = new THREE.Mesh(randomGeometry, material);
-
-    // Posición inicial aleatoria
+    // Posición inicial aleatoria dentro de los límites
     object.position.set(
-      Math.random() * sceneSize.x - sceneSize.x / 2,
-      Math.random() * sceneSize.y,
-      -Math.random() * sceneSize.z
+      THREE.MathUtils.randFloat(-sceneSize.x / 2 + 5, sceneSize.x / 2 - 5),
+      THREE.MathUtils.randFloat(2, sceneSize.y - 2),
+      THREE.MathUtils.randFloat(-sceneSize.z / 2 + 5, sceneSize.z / 2 - 5)
+    );
+
+    // Rotación aleatoria para mayor variabilidad visual
+    object.rotation.set(
+      THREE.MathUtils.randFloat(0, Math.PI),
+      THREE.MathUtils.randFloat(0, Math.PI),
+      THREE.MathUtils.randFloat(0, Math.PI)
     );
 
     scene.add(object);

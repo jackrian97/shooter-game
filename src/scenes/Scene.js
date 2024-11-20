@@ -9,6 +9,7 @@ function createScene(container) {
   // Fondo de la escena
   scene.background = new THREE.Color(0x87ceeb);
 
+  // Cámara
   const camera = new THREE.PerspectiveCamera(
     75,
     container.offsetWidth / container.offsetHeight,
@@ -16,6 +17,7 @@ function createScene(container) {
     1000
   );
 
+  // Renderer
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(container.offsetWidth, container.offsetHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -29,15 +31,58 @@ function createScene(container) {
   directionalLight.position.set(10, 20, 10);
   scene.add(directionalLight);
 
+  // Tamaño de la escena
+  const sceneSize = { x: 50, y: 25, z: 50 }; // Match con el plano
+
   // Suelo
-  const planeGeometry = new THREE.PlaneGeometry(100, 100);
+  const planeGeometry = new THREE.PlaneGeometry(sceneSize.x, sceneSize.z);
   const planeMaterial = new THREE.MeshPhongMaterial({ color: 0x556b2f });
   const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-  plane.rotation.x = -Math.PI / 2;
+  plane.rotation.x = -Math.PI / 2; // Colocar el plano horizontalmente
+  plane.position.y = 0; // Altura del plano
   scene.add(plane);
 
-  // Crear objetos aleatorios
-  const sceneSize = { x: 50, y: 20, z: 50 };
+  // Crear materiales de colores para las paredes
+  const wallMaterials = {
+    front: new THREE.MeshPhongMaterial({ color: 0xFF00FF}), // Violeta
+    back: new THREE.MeshPhongMaterial({ color: 0x00ff00 }),  // Verde
+    left: new THREE.MeshPhongMaterial({ color: 0x0000ff }),  // Azul
+    right: new THREE.MeshPhongMaterial({ color: 0xffff00 }), // Amarillo
+  };
+
+  const createWall = (width, height, depth, position, material) => {
+    const wall = new THREE.Mesh(
+      new THREE.BoxGeometry(width, height, depth),
+      material
+    );
+    wall.position.set(position.x, position.y, position.z);
+    return wall;
+  };
+
+  const halfX = sceneSize.x / 2;
+  const halfZ = sceneSize.z / 2;
+
+  // Crear paredes ajustadas a los límites
+const wallThickness = 0.5;
+
+// Pared frontal
+scene.add(createWall(sceneSize.x, sceneSize.y, wallThickness, { x: 0, y: sceneSize.y / 2, z: -sceneSize.z / 2 }, wallMaterials.front));
+// Pared trasera
+scene.add(createWall(sceneSize.x, sceneSize.y, wallThickness, { x: 0, y: sceneSize.y / 2, z: sceneSize.z / 2 }, wallMaterials.back));
+// Pared izquierda
+scene.add(createWall(wallThickness, sceneSize.y, sceneSize.z, { x: -sceneSize.x / 2, y: sceneSize.y / 2, z: 0 }, wallMaterials.left));
+// Pared derecha
+scene.add(createWall(wallThickness, sceneSize.y, sceneSize.z, { x: sceneSize.x / 2, y: sceneSize.y / 2, z: 0 }, wallMaterials.right));
+
+  // Techo
+  const ceilingGeometry = new THREE.PlaneGeometry(sceneSize.x, sceneSize.z);
+  const ceilingMaterial = new THREE.MeshPhongMaterial({ color: 0xaaaaaa });
+  const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
+  ceiling.rotation.x = Math.PI / 2; // Rotación para orientarlo horizontalmente
+  ceiling.position.y = sceneSize.y; // Posición del techo
+  scene.add(ceiling);
+
+  // Objetos aleatorios
   const objects = createRandomObjects(scene, 10, sceneSize);
 
   // Crear dianas
@@ -47,7 +92,7 @@ function createScene(container) {
   const player = createPlayer(camera, sceneSize);
 
   // Ajustar cámara
-  camera.position.set(0, 2, 20); // Posición inicial
+  camera.position.set(0, 2, 20);
   camera.lookAt(0, 2, 0);
 
   // Ajustar ventana
