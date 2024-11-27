@@ -1,7 +1,8 @@
-import * as THREE from 'three';
-import createTargets from './Target';
-import { createRandomObjects } from './Objects';
-import createPlayer from './Player';
+import * as THREE from "three";
+import createTargets from "./Target";
+import { createRandomObjects } from "./Objects";
+import createPlayer from "./Player";
+import Shoot from "./Shoot";
 
 function createScene(container) {
   const scene = new THREE.Scene();
@@ -44,12 +45,12 @@ function createScene(container) {
 
   // Crear materiales de colores para las paredes
   const wallMaterials = {
-    front: new THREE.MeshPhongMaterial({ color: 0xFF00FF}), // Violeta
-    back: new THREE.MeshPhongMaterial({ color: 0x00ff00 }),  // Verde
-    left: new THREE.MeshPhongMaterial({ color: 0x0000ff }),  // Azul
+    front: new THREE.MeshPhongMaterial({ color: 0xff00ff }), // Violeta
+    back: new THREE.MeshPhongMaterial({ color: 0x00ff00 }), // Verde
+    left: new THREE.MeshPhongMaterial({ color: 0x0000ff }), // Azul
     right: new THREE.MeshPhongMaterial({ color: 0xffff00 }), // Amarillo
   };
-
+  // paredes del escenario
   const createWall = (width, height, depth, position, material) => {
     const wall = new THREE.Mesh(
       new THREE.BoxGeometry(width, height, depth),
@@ -63,16 +64,48 @@ function createScene(container) {
   const halfZ = sceneSize.z / 2;
 
   // Crear paredes ajustadas a los límites
-const wallThickness = 0.5;
+  const wallThickness = 0.5;
 
-// Pared frontal
-scene.add(createWall(sceneSize.x, sceneSize.y, wallThickness, { x: 0, y: sceneSize.y / 2, z: -sceneSize.z / 2 }, wallMaterials.front));
-// Pared trasera
-scene.add(createWall(sceneSize.x, sceneSize.y, wallThickness, { x: 0, y: sceneSize.y / 2, z: sceneSize.z / 2 }, wallMaterials.back));
-// Pared izquierda
-scene.add(createWall(wallThickness, sceneSize.y, sceneSize.z, { x: -sceneSize.x / 2, y: sceneSize.y / 2, z: 0 }, wallMaterials.left));
-// Pared derecha
-scene.add(createWall(wallThickness, sceneSize.y, sceneSize.z, { x: sceneSize.x / 2, y: sceneSize.y / 2, z: 0 }, wallMaterials.right));
+  // Pared frontal
+  scene.add(
+    createWall(
+      sceneSize.x,
+      sceneSize.y,
+      wallThickness,
+      { x: 0, y: sceneSize.y / 2, z: -sceneSize.z / 2 },
+      wallMaterials.front
+    )
+  );
+  // Pared trasera
+  scene.add(
+    createWall(
+      sceneSize.x,
+      sceneSize.y,
+      wallThickness,
+      { x: 0, y: sceneSize.y / 2, z: sceneSize.z / 2 },
+      wallMaterials.back
+    )
+  );
+  // Pared izquierda
+  scene.add(
+    createWall(
+      wallThickness,
+      sceneSize.y,
+      sceneSize.z,
+      { x: -sceneSize.x / 2, y: sceneSize.y / 2, z: 0 },
+      wallMaterials.left
+    )
+  );
+  // Pared derecha
+  scene.add(
+    createWall(
+      wallThickness,
+      sceneSize.y,
+      sceneSize.z,
+      { x: sceneSize.x / 2, y: sceneSize.y / 2, z: 0 },
+      wallMaterials.right
+    )
+  );
 
   // Techo
   const ceilingGeometry = new THREE.PlaneGeometry(sceneSize.x, sceneSize.z);
@@ -91,6 +124,9 @@ scene.add(createWall(wallThickness, sceneSize.y, sceneSize.z, { x: sceneSize.x /
   // Crear jugador
   const player = createPlayer(camera, sceneSize);
 
+  // Inicializar sistema de disparo
+  const shootSystem = new Shoot(camera, scene, targets);
+
   // Ajustar cámara
   camera.position.set(0, 2, 20);
   camera.lookAt(0, 2, 0);
@@ -101,7 +137,7 @@ scene.add(createWall(wallThickness, sceneSize.y, sceneSize.z, { x: sceneSize.x /
     camera.updateProjectionMatrix();
     renderer.setSize(container.offsetWidth, container.offsetHeight);
   };
-  window.addEventListener('resize', onResize);
+  window.addEventListener("resize", onResize);
 
   // Animación
   const animate = () => {
@@ -118,19 +154,19 @@ scene.add(createWall(wallThickness, sceneSize.y, sceneSize.z, { x: sceneSize.x /
   animate();
 
   const dispose = () => {
-    window.removeEventListener('resize', onResize);
+    window.removeEventListener("resize", onResize);
     renderer.dispose();
   };
 
   return { dispose };
 }
-const scoreElement = document.createElement('div');
-scoreElement.id = 'score';
-scoreElement.style.position = 'absolute';
-scoreElement.style.top = '10px';
-scoreElement.style.left = '10px';
-scoreElement.style.color = 'white';
-scoreElement.style.fontSize = '20px';
-scoreElement.textContent = '0'; // Puntuación inicial
+const scoreElement = document.createElement("div");
+scoreElement.id = "score";
+scoreElement.style.position = "absolute";
+scoreElement.style.top = "20px";
+scoreElement.style.left = "20px";
+scoreElement.style.color = "white";
+scoreElement.style.fontSize = "40px";
+scoreElement.textContent = "0"; // Puntuación inicial
 document.body.appendChild(scoreElement);
 export default createScene;

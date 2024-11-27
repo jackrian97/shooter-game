@@ -1,12 +1,12 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 
 export default function createTargets(scene, objects, sceneSize) {
-  createCrosshair()
+  createCrosshair();
   const targets = [];
   const targetGeometry = new THREE.SphereGeometry(0.5, 16, 16); // Radio reducido
   const targetMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 }); // Color rojo
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 10; i++) {
     const target = new THREE.Mesh(targetGeometry, targetMaterial);
 
     // Posición inicial aleatoria dentro de los límites
@@ -31,7 +31,9 @@ export default function createTargets(scene, objects, sceneSize) {
 
         if (distance < collisionThreshold) {
           // Cambiar dirección al colisionar
-          velocity.reflect(target.position.clone().sub(object.position).normalize());
+          velocity.reflect(
+            target.position.clone().sub(object.position).normalize()
+          );
           break;
         }
       }
@@ -45,12 +47,18 @@ export default function createTargets(scene, objects, sceneSize) {
       const wallThickness = 0.5;
 
       // Eje X (izquierda y derecha)
-      if (target.position.x <= -sceneSize.x / 2 + wallThickness || target.position.x >= sceneSize.x / 2 - wallThickness) {
+      if (
+        target.position.x <= -sceneSize.x / 2 + wallThickness ||
+        target.position.x >= sceneSize.x / 2 - wallThickness
+      ) {
         velocity.x *= -1; // Invertir dirección
       }
 
       // Eje Z (frontal y trasera)
-      if (target.position.z <= -sceneSize.z / 2 + wallThickness || target.position.z >= sceneSize.z / 2 - wallThickness) {
+      if (
+        target.position.z <= -sceneSize.z / 2 + wallThickness ||
+        target.position.z >= sceneSize.z / 2 - wallThickness
+      ) {
         velocity.z *= -1; // Invertir dirección
       }
 
@@ -67,18 +75,18 @@ export default function createTargets(scene, objects, sceneSize) {
     scene.add(target);
     targets.push(target);
   }
-
+  //mira del personaje en el centro
   function createCrosshair() {
-    const crosshair = document.createElement('div');
-    crosshair.style.position = 'absolute';
-    crosshair.style.top = '50%';
-    crosshair.style.left = '50%';
-    crosshair.style.width = '10px';
-    crosshair.style.height = '10px';
-    crosshair.style.backgroundColor = 'red';
-    crosshair.style.borderRadius = '50%';
-    crosshair.style.transform = 'translate(-50%, -50%)';
-    crosshair.style.zIndex = '1000';
+    const crosshair = document.createElement("div");
+    crosshair.style.position = "absolute";
+    crosshair.style.top = "50%";
+    crosshair.style.left = "50%";
+    crosshair.style.width = "10px";
+    crosshair.style.height = "10px";
+    crosshair.style.backgroundColor = "red";
+    crosshair.style.borderRadius = "50%";
+    crosshair.style.transform = "translate(-50%, -50%)";
+    crosshair.style.zIndex = "1000";
     document.body.appendChild(crosshair);
   }
   return targets;
